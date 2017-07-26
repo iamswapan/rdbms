@@ -1,0 +1,145 @@
+Database Engines:
+=======================================================================================
+
+Database engines are the DB components, which handle the SQL operations for different table types to store and manage information in the database. To check the availabe DB engines in MySQL execute the following command:
+
+mysql> show ENGINES;
++--------------------+---------+----------------------------------------------------------------+--------------+------+------------+
+| Engine             | Support | Comment                                                        | Transactions | XA   | Savepoints |
++--------------------+---------+----------------------------------------------------------------+--------------+------+------------+
+| MEMORY             | YES     | Hash based, stored in memory, useful for temporary tables      | NO           | NO   | NO         |
+| CSV                | YES     | CSV storage engine                                             | NO           | NO   | NO         |
+| MRG_MYISAM         | YES     | Collection of identical MyISAM tables                          | NO           | NO   | NO         |
+| BLACKHOLE          | YES     | /dev/null storage engine (anything you write to it disappears) | NO           | NO   | NO         |
+| MyISAM             | YES     | MyISAM storage engine                                          | NO           | NO   | NO         |
+| InnoDB             | DEFAULT | Supports transactions, row-level locking, and foreign keys     | YES          | YES  | YES        |
+| ARCHIVE            | YES     | Archive storage engine                                         | NO           | NO   | NO         |
+| PERFORMANCE_SCHEMA | YES     | Performance Schema                                             | NO           | NO   | NO         |
+| FEDERATED          | NO      | Federated MySQL storage engine                                 | NULL         | NULL | NULL       |
++--------------------+---------+----------------------------------------------------------------+--------------+------+------------+
+9 rows in set (0.00 sec)
+
+**NOTE --> InnoDB : InnoDB is the default storage engine for MySQL 5.5 and higher.
+
+========================================================
+**Setting of Storage Engine:
+We can set the default storage engine for the current session:
+
+mysql> SET default_storage_engine=ARCHIVE;
+Query OK, 0 rows affected (0.00 sec)
+
+
+
+In CREATE TABLE statement we can provide storage engine option.
+
+
+mysql> create table db_engine1(id int(4)) ENGINE=MEMORY;
+Query OK, 0 rows affected (0.05 sec)
+
+mysql> show create table db_engine1 \G;
+*************************** 1. row ***************************
+       Table: db_engine1
+Create Table: CREATE TABLE `db_engine1` (
+  `id` int(4) DEFAULT NULL
+) ENGINE=MEMORY DEFAULT CHARSET=latin1
+1 row in set (0.00 sec)
+
+
+We also can convert a table from one storage type to another.
+
+mysql> alter table db_engine1 ENGINE=InnoDB;
+Query OK, 0 rows affected (0.63 sec)
+Records: 0  Duplicates: 0  Warnings: 0
+
+mysql> show create table db_engine1 \G;
+*************************** 1. row ***************************
+       Table: db_engine1
+Create Table: CREATE TABLE `db_engine1` (
+  `id` int(4) DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=latin1
+1 row in set (0.00 sec)
+
+============================================================================================
+
+
+mysql> select * from dept;
++--------+------------+-----------+
+| deptno | dname      | loc       |
++--------+------------+-----------+
+|     10 | ACCOUNTING | NEW YORK  |
+|     20 | RESEARCH   | DALLAS    |
+|     30 | SALES      | CHICAGO   |
+|     40 | OPERATIONS | BOSTON    |
+|     50 | DEVELOPER  | NEW DELHI |
+|     60 | QA         | MUMBAI    |
++--------+------------+-----------+
+6 rows in set (0.03 sec)
+
+mysql> CREATE TABLE dept_clone AS SELECT * FROM dept;
+Query OK, 6 rows affected (0.50 sec)
+Records: 6  Duplicates: 0  Warnings: 0
+
+mysql> select * from dept_clone;
++--------+------------+-----------+
+| deptno | dname      | loc       |
++--------+------------+-----------+
+|     10 | ACCOUNTING | NEW YORK  |
+|     20 | RESEARCH   | DALLAS    |
+|     30 | SALES      | CHICAGO   |
+|     40 | OPERATIONS | BOSTON    |
+|     50 | DEVELOPER  | NEW DELHI |
+|     60 | QA         | MUMBAI    |
++--------+------------+-----------+
+6 rows in set (0.00 sec)
+
+==============================================================================================
+Temporary Table:
+
+TEMPORARY table is the special feature provided by RDBMS. A TEMPORARY table is visible only to the current session, and is dropped automatically when the session is closed. This means that two different sessions can use the same temporary table name without conflicting with each other or with an existing non-TEMPORARY table of the same name. TEMPORARY tables have a very loose relationship with databases (schemas). Dropping a database does not automatically drop any TEMPORARY tables created within that database. Temporary Table can only be created as type MEMORY, MyISAM, MERGE, or InnoDB.
+
+Creating TEMPORARY table:
+
+mysql> CREATE TEMPORARY TABLE temp_dept AS (SELECT * FROM dept);
+Query OK, 6 rows affected (0.26 sec)
+Records: 6  Duplicates: 0  Warnings: 0
+
+The SHOW TABLES statement does not list Temporary Table.
+mysql> show tables;
++--------------------+
+| Tables_in_sampledb |
++--------------------+
+| db_engine1         |
+| dept               |
+| dept_clone         |
+| emp                |
+| employeedetails    |
++--------------------+
+5 rows in set (0.00 sec)
+
+mysql> select * from temp_dept;
++--------+------------+-----------+
+| deptno | dname      | loc       |
++--------+------------+-----------+
+|     10 | ACCOUNTING | NEW YORK  |
+|     20 | RESEARCH   | DALLAS    |
+|     30 | SALES      | CHICAGO   |
+|     40 | OPERATIONS | BOSTON    |
+|     50 | DEVELOPER  | NEW DELHI |
+|     60 | QA         | MUMBAI    |
++--------+------------+-----------+
+6 rows in set (0.00 sec)
+
+
+Drop TEMPORARY table:
+
+By default, all the temporary tables created are dropped automatically by MySQL when your database connection is terminated, but you still can manually drop a temporary table by issuing DROP TABLE command.
+
+mysql> DROP TABLE temp_dept;
+Query OK, 0 rows affected (0.21 sec)
+
+mysql> select * from temp_dept;
+ERROR 1146 (42S02): Table 'sampledb.temp_dept' doesn't exist
+
+
+
+
